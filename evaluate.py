@@ -32,8 +32,7 @@ A: Michael started with 58 golf balls. After losing 23 on tuesday, he had 58 - 2
 Q: Olivia has $23. She bought five bagels for $3 each. How much money does she have left?
 A: Olivia had 23 dollars. 5 bagels for 3 dollars each will be 5 x 3 = 15 dollars. So she has 23 - 15 dollars left. 23 - 15 is 8. The answer is 8."""
 
-SYSTEM_PROMPT = """Your task is to answer a math question. You must give the final answer with the format "The answer is [number]." in the end of the output. 
-\nHere are some examples:"""
+SYSTEM_PROMPT = """Your task is to answer a math question. You must give the final answer with the format "The answer is [number]." in the end of the output."""
 
 
 def read_jsonl(path: str):
@@ -42,7 +41,7 @@ def read_jsonl(path: str):
 
 
 def get_examples(split):
-    path = os.path.join("./grade_school_math/data", f"{split}.jsonl")
+    path = os.path.join("./grade-school-math/data", f"{split}.jsonl")
     examples = read_jsonl(path)
 
     for ex in examples:
@@ -83,13 +82,14 @@ def construct_prompt_with_template(question, model_name):
     model_name = model_name.lower()
     if "llama" in model_name:
         prompt = (
-            f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{SYSTEM_PROMPT}\n{FEWSHOT_PROMPTS}<|eot_id|>"
-            f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\nQ: {question}<|eot_id|>"
+            f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{SYSTEM_PROMPT}<|eot_id|>"
+            f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\nHere are some examples: \n\n{FEWSHOT_PROMPTS}\nHere is the question: \nQ: {question}<|eot_id|>"
             f"<|start_header_id|>assistant<|end_header_id|>\n\nA: "
         )
         return prompt
 
 def extract_answer_from_completion(completion):
+    completion = completion.split("\n")[0]
     completion = completion.strip().replace("\n", " ")
     regex = r"The answer is ([0-9\.\,]+)."
     match = re.search(regex, completion)
